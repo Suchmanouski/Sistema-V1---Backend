@@ -7,7 +7,11 @@ const fs = require('fs');
 const app = express();
 const PORT = 3001;
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://sistemav1.onrender.com',
+  methods: ['GET', 'POST'],
+  credentials: true
+}));
 app.use(bodyParser.json());
 
 const dbFile = './gastos.db';
