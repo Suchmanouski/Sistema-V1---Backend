@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { cadastrarUsuario } = require('../Controles/usuariosC'); // Atualize com a função correta
+const { cadastrarUsuario, listarUsuarios } = require('../Controles/usuariosC');
 
-// Rota de Cadastro de Usuário
 router.post('/', async (req, res) => {
   await cadastrarUsuario(req, res);
+});
+
+router.get('/', async (req, res) => {
+  await listarUsuarios(req, res);
 });
 
 module.exports = router;

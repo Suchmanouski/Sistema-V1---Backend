@@ -1,15 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { cadastrarDespesa } = require('../Controles/despesasC'); // Ajuste conforme necessário
+const { cadastrarDespesa, listarDespesas } = require('../Controles/despesasC');
 
-// Rota para Cadastrar Despesa
 router.post('/', async (req, res) => {
   await cadastrarDespesa(req, res);
 });
 
-// Rota para Listar Despesas
 router.get('/', async (req, res) => {
-  await listarDespesas(req, res); // Ajuste para listar despesas, se necessário
+  await listarDespesas(req, res);
 });
 
 module.exports = router;
