@@ -10,6 +10,15 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(bodyParser.json());
 
+// Middleware para validar admin
+function verificarAdmin(req, res, next) {
+  const { tipo_usuario } = req.headers;
+  if (tipo_usuario !== 'admin') {
+    return res.status(403).json({ message: 'Acesso negado: apenas administradores.' });
+  }
+  next();
+}
+
 // ROTA LOGIN
 app.post('/login', async (req, res) => {
   const { nome, senha } = req.body;
@@ -37,8 +46,8 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// ROTA CADASTRO DE USUÁRIO
-app.post('/usuarios', async (req, res) => {
+// ROTA CADASTRO DE USUÁRIO (apenas admin)
+app.post('/usuarios', verificarAdmin, async (req, res) => {
   const { nome, email, senha, tipo_usuario, contrato } = req.body;
 
   try {
@@ -53,8 +62,8 @@ app.post('/usuarios', async (req, res) => {
   }
 });
 
-// ROTA PARA ADICIONAR CONTRATO
-app.post('/contratos', async (req, res) => {
+// ROTA PARA ADICIONAR CONTRATO (apenas admin)
+app.post('/contratos', verificarAdmin, async (req, res) => {
   const { numero, contratante, dataInicio, dataFim, valorInicial } = req.body;
 
   try {
@@ -69,7 +78,7 @@ app.post('/contratos', async (req, res) => {
   }
 });
 
-// ROTA PARA ADICIONAR DESPESA
+// ROTA PARA ADICIONAR DESPESA (aberta a qualquer usuário autorizado)
 app.post('/despesas', async (req, res) => {
   const { contrato, categoria, valor, data, observacao } = req.body;
 
