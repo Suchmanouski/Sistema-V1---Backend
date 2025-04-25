@@ -1,55 +1,87 @@
-// BackEnd/Rotas/Contratos.js
+// BackEnd/server.js
 
+require('dotenv').config();
 const express = require('express');
-const db = require('../db');  // Postgres pool
-const router = express.Router();
+const cors = require('cors');
+const db = require('./db');            // Conexão com Postgres via db.js na mesma pasta
+const bodyParser = require('body-parser');
+const nodemailer = require('nodemailer');
 
-// GET /api/contratos - lista todos os contratos
-router.get('/', async (req, res) => {
+// Import de rotas
+const loginRouter = require('./Rotas/Login');
+const forgotRouter = require('./Rotas/Forgot');
+const contratosRouter = require('./Rotas/Contratos');
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// CORS - permite requests do seu front
+app.use(cors({
+  origin: 'https://sistemav1.onrender.com',
+  credentials: true
+}));
+
+// Body parser
+app.use(bodyParser.json());
+
+// Seed usuários e contratos
+(async () => {
   try {
-    const { rows } = await db.query(
-      `SELECT id, numero, contratante, estado, cidade, gerente, coordenador,
-              valor_inicial AS "valorInicial", data_inicio AS "dataInicio",
-              data_fim AS "dataFim", status, tipo, criador, data_criacao AS "dataCriacao"
-       FROM contratos
-       ORDER BY id DESC`);
-    res.json(rows);
+    // Usuários
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS usuarios (
+        id_usuario SERIAL PRIMARY KEY,
+        nome TEXT UNIQUE NOT NULL,
+        email TEXT,
+        senha TEXT NOT NULL,
+        tipo_usuario TEXT,
+        contrato TEXT
+      );
+    `);
+    const userSeeds = [
+      ['Renato Santos','renato@neoconstec.com','123456','admin',null],
+      ['Glauce Dantas','glaucea@simemp.com','123456','admin',null],
+      // adicione outros seeds aqui
+    ];
+    for (const u of userSeeds) {
+      await db.query(
+        `INSERT INTO usuarios (nome,email,senha,tipo_usuario,contrato)
+         VALUES ($1,$2,$3,$4,$5)
+         ON CONFLICT (nome) DO NOTHING;`,
+        u
+      );
+    }
+    // Contratos
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS contratos (
+        id SERIAL PRIMARY KEY,
+        numero TEXT,
+        contratante TEXT,
+        estado TEXT,
+        cidade TEXT,
+        gerente TEXT,
+        coordenador TEXT,
+        valor_inicial NUMERIC,
+        data_inicio TIMESTAMP,
+        data_fim TIMESTAMP,
+        status TEXT,
+        tipo TEXT,
+        criador TEXT,
+        data_criacao TIMESTAMP DEFAULT NOW()
+      );
+    `);
   } catch (err) {
-    console.error('Erro ao listar contratos:', err);
-    res.status(500).json({ error: 'Erro ao listar contratos.' });
+    console.error('Erro no seed inicial:', err);
   }
-});
+})();
 
-// POST /api/contratos - cria novo contrato
-router.post('/', async (req, res) => {
-  const {
-    numero, contratante, estado, cidade,
-    gerente, coordenador, valorInicial,
-    dataInicio, dataFim, status, tipo, criador
-  } = req.body;
+// Rotas
+app.use('/login', loginRouter);
+app.use('/esqueci-senha', forgotRouter);
+app.use('/api/contratos', contratosRouter);
 
-  if (!numero || !contratante) {
-    return res.status(400).json({ error: 'Campos numero e contratante são obrigatórios.' });
-  }
+// Health check
+app.get('/', (req, res) => res.send('Servidor rodando com Postgres!'));
 
-  try {
-    const result = await db.query(
-      `INSERT INTO contratos
-         (numero, contratante, estado, cidade, gerente, coordenador,
-          valor_inicial, data_inicio, data_fim, status, tipo, criador)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-       RETURNING id, numero, contratante, estado, cidade, gerente, coordenador,
-                 valor_inicial AS "valorInicial", data_inicio AS "dataInicio",
-                 data_fim AS "dataFim", status, tipo, criador, data_criacao AS "dataCriacao"`,
-      [numero, contratante, estado, cidade, gerente, coordenador,
-       valorInicial, dataInicio, dataFim, status, tipo, criador]
-    );
-
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    console.error('Erro ao criar contrato:', err);
-    res.status(500).json({ error: 'Erro ao criar contrato.' });
-  }
-});
-
-module.exports = router;
+// Iniciar servidor
+app.listen(PORT, () => console.log(`🚀 Servidor na porta ${PORT}`));
