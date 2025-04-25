@@ -1,18 +1,25 @@
 const jwt = require('jsonwebtoken');
 
+// Middleware para autenticação de token
 function autenticarToken(req, res, next) {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const token = authHeader && authHeader.split(' ')[1];  // Pega o token do header
 
-  if (!token) return res.sendStatus(401);
+  if (!token) {
+    return res.sendStatus(401);  // Se não houver token, retorna erro 401
+  }
 
+  // Verifica o token com a chave secreta
   jwt.verify(token, process.env.JWT_SECRET, (err, usuario) => {
-    if (err) return res.sendStatus(403);
-    req.usuario = usuario;
+    if (err) {
+      return res.sendStatus(403);  // Se o token for inválido, retorna erro 403
+    }
+    req.usuario = usuario;  // Passa o usuário autenticado para a próxima função
     next();
   });
 }
 
+// Middleware para verificar se o usuário é admin
 function verificarAdmin(req, res, next) {
   if (req.usuario.tipo_usuario !== 'admin') {
     return res.status(403).json({ message: 'Acesso negado: apenas administradores.' });

@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3001;
 const usuariosRoutes = require('./Rotas/Usuarios');
 const contratosRoutes = require('./Rotas/Contratos');
 const despesasRoutes = require('./Rotas/Despesas');
-const logsRoutes = require('./Rotas/Logs'); // certifique-se de que Logs.js existe
+const logsRoutes = require('./Rotas/Login'); // certifique-se de que Logs.js existe
 
 app.use(cors());
 app.use(bodyParser.json());
