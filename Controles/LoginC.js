@@ -1,5 +1,5 @@
-const pool = require('../db');
 
+const pool = require('../db');
 async function listarLogs(req, res) {
   try {
     const resultado = await pool.query(

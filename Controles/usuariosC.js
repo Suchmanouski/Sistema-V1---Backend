@@ -1,7 +1,7 @@
 const pool = require('../db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const pool = require('../db');
+
 
 // função utilitária para registrar logs
 async function registrarLog(usuario, acao, detalhes, ip) {

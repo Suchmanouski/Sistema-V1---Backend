@@ -1,4 +1,4 @@
-
+const pool = require('../db');
 async function inserirUsuarios() {
   try {
     await pool.query(`

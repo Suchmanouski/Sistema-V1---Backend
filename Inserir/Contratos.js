@@ -1,5 +1,5 @@
-const pool = require('./db');
 
+const pool = require('../db');
 async function inserirContratos() {
   try {
     await pool.query(`
