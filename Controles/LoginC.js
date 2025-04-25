@@ -1,13 +1,18 @@
 const pool = require('../db');
 
 async function autenticarUsuario(req, res) {
-  const { email, senha } = req.body;
+  const { nome, senha } = req.body; // ← agora pega 'nome'
+
   try {
-    const resultado = await pool.query('SELECT * FROM usuarios WHERE email = $1 AND senha = $2', [email, senha]);
+    const resultado = await pool.query(
+      'SELECT * FROM usuarios WHERE nome = $1 AND senha = $2', // ← busca por nome
+      [nome, senha]
+    );
+
     if (resultado.rows.length > 0) {
       res.status(200).json({ message: 'Login bem-sucedido', usuario: resultado.rows[0] });
     } else {
-      res.status(401).json({ message: 'Email ou senha incorretos' });
+      res.status(401).json({ message: 'Nome ou senha incorretos' });
     }
   } catch (err) {
     console.error('❌ Erro no login:', err);
