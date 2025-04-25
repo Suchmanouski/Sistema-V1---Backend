@@ -20,22 +20,13 @@ app.use(cors({
 // Body parsing
 app.use(bodyParser.json());
 
-// --- Seed inicial de usuários (executa sempre, sem duplicar) ---
+// --- Seed inicial de usuários: recria tabela e insere seeds ---
 (async () => {
-  const seeds = [
-    ['Renato Santos',      'renato@neoconstec.com', '123456', 'admin',       null],
-    ['Glauce Dantas',      'glaucea@simemp.com',    '123456', 'admin',       null],
-    ['Lucas Soares Lima',  'lucaslima@gmail.com',   '123456', 'coordenador', '411'],
-    ['Gerrard Suchmanouski','gerrardsuchmaouskisilva@gmail.com','123456','admin',null],
-    ['Andrey Debiasi de Souza','andrey@gmail.com',  '123456','coordenador','3122'],
-    ['Luiz Sócrates Veloso','luiz@gmail.com',       '123456','coordenador','3138'],
-    ['Marcio Herrera',     'marcio@gmail.com',      '123456','coordenador','415'],
-    ['Kleber Ubirajara',   'kleber@empresa.com',    '123456','financeiro', null]
-  ];
-
+  // Em ambiente de desenvolvimento, recria a tabela para garantir estrutura correta
   try {
+    await db.query('DROP TABLE IF EXISTS usuarios;');
     await db.query(`
-      CREATE TABLE IF NOT EXISTS usuarios (
+      CREATE TABLE usuarios (
         id_usuario   SERIAL PRIMARY KEY,
         nome         TEXT UNIQUE NOT NULL,
         email        TEXT,
@@ -45,15 +36,25 @@ app.use(bodyParser.json());
       );
     `);
 
+    const seeds = [
+      ['Renato Santos',      'renato@neoconstec.com', '123456', 'admin',       null],
+      ['Glauce Dantas',      'glaucea@simemp.com',    '123456', 'admin',       null],
+      ['Lucas Soares Lima',  'lucaslima@gmail.com',   '123456', 'coordenador', '411'],
+      ['Gerrard Suchmanouski','gerrardsuchmaouskisilva@gmail.com','123456','admin',null],
+      ['Andrey Debiasi de Souza','andrey@gmail.com',  '123456','coordenador','3122'],
+      ['Luiz Sócrates Veloso','luiz@gmail.com',       '123456','coordenador','3138'],
+      ['Marcio Herrera',     'marcio@gmail.com',      '123456','coordenador','415'],
+      ['Kleber Ubirajara',   'kleber@empresa.com',    '123456','financeiro', null]
+    ];
+
     for (const u of seeds) {
       await db.query(
         `INSERT INTO usuarios (nome, email, senha, tipo_usuario, contrato)
-         VALUES ($1,$2,$3,$4,$5)
-         ON CONFLICT (nome) DO NOTHING;`,
+         VALUES ($1,$2,$3,$4,$5);`,
         u
       );
     }
-    console.log('✅ Usuários seed executado com sucesso');
+    console.log('✅ Tabela usuarios recriada e seed executado com sucesso');
   } catch (err) {
     console.error('❌ Erro no seed de usuários:', err);
   }
@@ -62,7 +63,6 @@ app.use(bodyParser.json());
 // --- Rotas ---
 // Login
 app.post('/login', async (req, res) => {
-  console.log('🔍 Tentando login — corpo recebido:', req.body);
   const { nome, senha } = req.body;
   if (!nome || !senha) return res.status(400).json({ message: 'Nome e senha são obrigatórios.' });
 
@@ -72,14 +72,13 @@ app.post('/login', async (req, res) => {
       [nome]
     );
     const user = rows[0];
-    console.log('🗄️ Resultado do SELECT:', user);
     if (!user) return res.status(401).json({ message: 'Usuário não encontrado.' });
     if (user.senha !== senha) return res.status(401).json({ message: 'Senha incorreta.' });
 
     delete user.senha;
     res.json(user);
   } catch (err) {
-    console.error('❌ Erro no login:', err);
+    console.error('Erro no login:', err);
     res.status(500).json({ message: 'Erro no servidor.' });
   }
 });
@@ -105,13 +104,13 @@ app.post('/esqueci-senha', (req, res) => {
       <h3>Redefinição de Senha</h3>
       <p>Recebemos uma solicitação para redefinir sua senha.</p>
       <p>Clique no link abaixo para continuar:</p>
-      <a href=\"https://sistemav1.onrender.com/redefinir-senha?email=${encodeURIComponent(email)}\">Redefinir Senha</a>
+      <a href="https://sistemav1.onrender.com/redefinir-senha?email=${encodeURIComponent(email)}">Redefinir Senha</a>
     `
   };
 
-  transporter.sendMail(mailOptions, (erro, info) => {
+  transporter.sendMail(mailOptions, (erro) => {
     if (erro) {
-      console.error('❌ Erro ao enviar e-mail:', erro);
+      console.error('Erro ao enviar e-mail:', erro);
       return res.status(500).json({ message: 'Erro ao enviar o e-mail.' });
     }
     res.json({ message: 'E-mail enviado com sucesso!' });
