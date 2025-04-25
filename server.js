@@ -7,7 +7,6 @@ const nodemailer = require('nodemailer');
 
 // Rotas específicas
 const contratosRouter = require('./Rotas/Contratos');
-const seedRouter = require('./Rotas/Seed');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -106,7 +105,7 @@ app.post('/esqueci-senha', (req, res) => {
       <h3>Redefinição de Senha</h3>
       <p>Recebemos uma solicitação para redefinir sua senha.</p>
       <p>Clique no link abaixo para continuar:</p>
-      <a href="https://sistemav1.onrender.com/redefinir-senha?email=${encodeURIComponent(email)}">Redefinir Senha</a>
+      <a href=\"https://sistemav1.onrender.com/redefinir-senha?email=${encodeURIComponent(email)}\">Redefinir Senha</a>
     `
   };
 
@@ -118,9 +117,6 @@ app.post('/esqueci-senha', (req, res) => {
     res.json({ message: 'E-mail enviado com sucesso!' });
   });
 });
-
-// Seed de contratos via rota
-app.use('/api', seedRouter);
 
 // Rotas de Contratos
 app.use('/api/contratos', contratosRouter);
