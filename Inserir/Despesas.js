@@ -1,50 +1,22 @@
 const pool = require('../db');
-async function criarTabelas() {
+
+async function inserirDespesas() {
   try {
     await pool.query(`
-      CREATE TABLE IF NOT EXISTS usuarios (
-        id_usuario SERIAL PRIMARY KEY,
-        nome TEXT,
-        email TEXT,
-        senha TEXT,
-        tipo_usuario TEXT,
-        contrato TEXT
-      );
-
-      CREATE TABLE IF NOT EXISTS contratos (
-        id SERIAL PRIMARY KEY,
-        numero TEXT,
-        contratante TEXT,
-        dataInicio DATE,
-        dataFim DATE,
-        valorInicial NUMERIC
-      );
-
-      CREATE TABLE IF NOT EXISTS despesas (
-        id SERIAL PRIMARY KEY,
-        contrato TEXT,
-        categoria TEXT,
-        valor NUMERIC,
-        data DATE,
-        observacao TEXT
-      );
-
-      CREATE TABLE IF NOT EXISTS logs_atividade (
-        id SERIAL PRIMARY KEY,
-        usuario TEXT,
-        acao TEXT,
-        detalhes TEXT,
-        ip TEXT,
-        data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
+      INSERT INTO despesas (contrato, categoria, valor, data, observacao)
+      VALUES
+        ('411', 'Manutenção', 1000, '2024-01-15', 'Despesa de manutenção do contrato NEOCONSTEC'),
+        ('3122', 'Serviço', 500, '2023-12-20', 'Despesa de serviço do contrato SIMEMP'),
+        ('3138', 'Material', 300, '2024-02-10', 'Despesa de material para NEOCONSTEC'),
+        ('415', 'Transporte', 200, '2023-10-05', 'Despesa de transporte do contrato SIMEMP');
     `);
 
-    console.log("✅ Tabelas criadas com sucesso!");
+    console.log("✅ Despesas inseridas com sucesso!");
     process.exit();
   } catch (err) {
-    console.error("❌ Erro ao criar tabelas:", err);
+    console.error("❌ Erro ao inserir despesas:", err);
     process.exit(1);
   }
 }
 
-criarTabelas();
+inserirDespesas();

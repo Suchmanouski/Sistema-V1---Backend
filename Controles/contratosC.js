@@ -1,16 +1,6 @@
-
 const pool = require('../db');
-// função utilitária para registrar logs
-async function registrarLog(usuario, acao, detalhes, ip) {
-  try {
-    await pool.query(
-      'INSERT INTO logs_atividade (usuario, acao, detalhes, ip) VALUES ($1, $2, $3, $4)',
-      [usuario, acao, detalhes, ip]
-    );
-  } catch (err) {
-    console.error('❌ Erro ao registrar log:', err);
-  }
-}
+
+// Função para cadastrar um novo contrato
 async function cadastrarContrato(req, res) {
   const { numero, contratante, dataInicio, dataFim, valorInicial } = req.body;
 
@@ -21,9 +11,20 @@ async function cadastrarContrato(req, res) {
     );
     res.status(201).json({ message: 'Contrato adicionado com sucesso!' });
   } catch (err) {
-    console.error(err);
+    console.error('❌ Erro ao adicionar contrato:', err);
     res.status(500).json({ message: 'Erro ao adicionar contrato.' });
   }
 }
 
-module.exports = { cadastrarContrato };
+// Função para listar todos os contratos
+async function listarContratos(req, res) {
+  try {
+    const resultado = await pool.query('SELECT * FROM contratos');
+    res.json(resultado.rows);
+  } catch (err) {
+    console.error('❌ Erro ao listar contratos:', err);
+    res.status(500).json({ message: 'Erro ao listar contratos.' });
+  }
+}
+
+module.exports = { cadastrarContrato, listarContratos };

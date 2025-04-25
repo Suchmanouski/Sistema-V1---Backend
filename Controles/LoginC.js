@@ -1,5 +1,6 @@
-
 const pool = require('../db');
+
+// Função para listar logs de atividades
 async function listarLogs(req, res) {
   try {
     const resultado = await pool.query(

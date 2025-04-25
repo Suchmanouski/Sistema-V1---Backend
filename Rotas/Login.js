@@ -1,13 +1,10 @@
 const express = require('express');
 const router = express.Router();
+const { listarLogs } = require('../Controles/loginC'); // Ajuste para listar logs
 
-// Importando o controlador de logs
-const { listarLogs } = require('../Controles/loginC');  // Certifique-se de que este arquivo existe
-
-// Importando middlewares de autenticação
-const { autenticarToken, verificarAdmin } = require('../middleware/autenticacao');
-
-// Rota para buscar logs, somente admins podem acessar
-router.get('/logs', autenticarToken, verificarAdmin, listarLogs);
+// Rota para Listar Logs de Atividades
+router.get('/', async (req, res) => {
+  await listarLogs(req, res);
+});
 
 module.exports = router;

@@ -1,10 +1,10 @@
-
 const pool = require('../db');
+
 async function inserirContratos() {
   try {
     await pool.query(`
       INSERT INTO contratos (numero, contratante, dataInicio, dataFim, valorInicial)
-      VALUES 
+      VALUES
         ('411', 'NEOCONSTEC', '2024-01-01', '2025-12-31', 100000),
         ('3122', 'SIMEMP', '2023-05-01', '2025-04-30', 80000),
         ('3138', 'NEOCONSTEC', '2024-06-01', '2026-05-31', 120000),

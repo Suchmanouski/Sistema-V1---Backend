@@ -1,16 +1,6 @@
-
 const pool = require('../db');
-// função utilitária para registrar logs
-async function registrarLog(usuario, acao, detalhes, ip) {
-  try {
-    await pool.query(
-      'INSERT INTO logs_atividade (usuario, acao, detalhes, ip) VALUES ($1, $2, $3, $4)',
-      [usuario, acao, detalhes, ip]
-    );
-  } catch (err) {
-    console.error('❌ Erro ao registrar log:', err);
-  }
-}
+
+// Função para cadastrar uma nova despesa
 async function cadastrarDespesa(req, res) {
   const { contrato, categoria, valor, data, observacao } = req.body;
 
@@ -21,9 +11,20 @@ async function cadastrarDespesa(req, res) {
     );
     res.status(201).json({ message: 'Despesa adicionada com sucesso!' });
   } catch (err) {
-    console.error(err);
+    console.error('❌ Erro ao adicionar despesa:', err);
     res.status(500).json({ message: 'Erro ao adicionar despesa.' });
   }
 }
 
-module.exports = { cadastrarDespesa };
+// Função para listar todas as despesas
+async function listarDespesas(req, res) {
+  try {
+    const resultado = await pool.query('SELECT * FROM despesas');
+    res.json(resultado.rows);
+  } catch (err) {
+    console.error('❌ Erro ao listar despesas:', err);
+    res.status(500).json({ message: 'Erro ao listar despesas.' });
+  }
+}
+
+module.exports = { cadastrarDespesa, listarDespesas };

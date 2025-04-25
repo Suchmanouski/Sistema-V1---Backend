@@ -6,20 +6,19 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Corrigido: caminhos reais com letras maiúsculas
 const usuariosRoutes = require('./Rotas/Usuarios');
 const contratosRoutes = require('./Rotas/Contratos');
 const despesasRoutes = require('./Rotas/Despesas');
-const logsRoutes = require('./Rotas/Login'); // certifique-se de que Logs.js existe
+const logsRoutes = require('./Rotas/Logs');
 
 app.use(cors());
 app.use(bodyParser.json());
 
-// Rotas principais
-app.use('/', usuariosRoutes);
-app.use('/', contratosRoutes);
-app.use('/', despesasRoutes);
-app.use('/', logsRoutes);
+// Rotas
+app.use('/usuarios', usuariosRoutes);
+app.use('/contratos', contratosRoutes);
+app.use('/despesas', despesasRoutes);
+app.use('/logs', logsRoutes);
 
 app.listen(PORT, () => {
   console.log(`✅ Servidor rodando na porta ${PORT}`);

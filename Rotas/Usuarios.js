@@ -1,9 +1,10 @@
-const { autenticarToken, verificarAdmin } = require('../middleware/autenticacao');
 const express = require('express');
 const router = express.Router();
-const { loginUsuario, cadastrarUsuario } = require('../Controles/usuariosC');
+const { cadastrarUsuario } = require('../Controles/usuariosC'); // Atualize com a função correta
 
-router.post('/login', loginUsuario);
-router.post('/usuarios', autenticarToken, verificarAdmin, cadastrarUsuario);
+// Rota de Cadastro de Usuário
+router.post('/', async (req, res) => {
+  await cadastrarUsuario(req, res);
+});
 
 module.exports = router;
