@@ -27,13 +27,14 @@ db.serialize(() => {
     if (row.count === 0) {
       const stmt = db.prepare("INSERT INTO usuarios (id_usuario, nome, email, senha, tipo_usuario, contrato) VALUES (?, ?, ?, ?, ?, ?)");
 
-      stmt.run(1, 'Renato', 'renato@neoconstec.com', '123456', 'admin', null);
-      stmt.run(2, 'Gláucea', 'glaucea@simemp.com', '123456', 'admin', null);
+      stmt.run(1, 'Renato Santos', 'renato@neoconstec.com', '123456', 'admin', null);
+      stmt.run(2, 'Glauce Dantas', 'glaucea@simemp.com', '123456', 'admin', null);
       stmt.run(3, 'Lucas Soares Lima', 'lucaslima@gmail.com', '123456', 'coordenador', '411');
       stmt.run(4, 'Gerrard Suchmanouski', 'gerrardsuchmaouskisilva@gmail.com', '123456', 'admin', null);
       stmt.run(5, 'Andrey Debiasi de Souza', 'andrey@gmail.com', '123456', 'coordenador', '3122');
       stmt.run(6, 'Luiz Sócrates Veloso', 'luiz@gmail.com', '123456', 'coordenador', '3138');
       stmt.run(7, 'Marcio Herrera', 'marcio@gmail.com', '123456', 'coordenador', '415');
+      stmt.run(8, 'Kleber Ubirajara', 'marcio@gmail.com', '123456', 'financeiro', null);
 
       stmt.finalize();
       console.log('Usuários iniciais inseridos!');
