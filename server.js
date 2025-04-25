@@ -35,7 +35,6 @@ db.serialize(() => {
       stmt.run(6, 'Luiz Sócrates Veloso', 'luiz@gmail.com', '123456', 'coordenador', '3138');
       stmt.run(7, 'Marcio Herrera', 'marcio@gmail.com', '123456', 'coordenador', '415');
       stmt.run(8, 'Kleber Ubirajara', 'marcio@gmail.com', '123456', 'financeiro', null);
-
       stmt.finalize();
       console.log('Usuários iniciais inseridos!');
     }
