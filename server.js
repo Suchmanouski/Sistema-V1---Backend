@@ -1,96 +1,100 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const sqlite3 = require('sqlite3').verbose();
+const db = require('./db');         // conexão PostgreSQL via PG Pool
 const bodyParser = require('body-parser');
-const fs = require('fs');
-
-const app = express();
-const PORT = 3001;
-
-app.use(cors());
-app.use(bodyParser.json());
-
-const dbFile = './gastos.db';
-const db = new sqlite3.Database(dbFile);
-
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS usuarios (
-    id_usuario INTEGER PRIMARY KEY,
-    nome TEXT,
-    email TEXT,
-    senha TEXT,
-    tipo_usuario TEXT,
-    contrato TEXT
-  )`);
-
-  db.get("SELECT COUNT(*) as count FROM usuarios", (err, row) => {
-    if (row.count === 0) {
-      const stmt = db.prepare("INSERT INTO usuarios (id_usuario, nome, email, senha, tipo_usuario, contrato) VALUES (?, ?, ?, ?, ?, ?)");
-
-      stmt.run(1, 'Renato Santos', 'renato@neoconstec.com', '123456', 'admin', null);
-      stmt.run(2, 'Glauce Dantas', 'glaucea@simemp.com', '123456', 'admin', null);
-      stmt.run(3, 'Lucas Soares Lima', 'lucaslima@gmail.com', '123456', 'coordenador', '411');
-      stmt.run(4, 'Gerrard Suchmanouski', 'gerrardsuchmaouskisilva@gmail.com', '123456', 'admin', null);
-      stmt.run(5, 'Andrey Debiasi de Souza', 'andrey@gmail.com', '123456', 'coordenador', '3122');
-      stmt.run(6, 'Luiz Sócrates Veloso', 'luiz@gmail.com', '123456', 'coordenador', '3138');
-      stmt.run(7, 'Marcio Herrera', 'marcio@gmail.com', '123456', 'coordenador', '415');
-      stmt.run(8, 'Kleber Ubirajara', 'marcio@gmail.com', '123456', 'financeiro', null);
-      stmt.finalize();
-      console.log('Usuários iniciais inseridos!');
-    }
-  });
-});
-
-app.post('/login', (req, res) => {
-  console.log('🔍 Tentando login — corpo recebido:', req.body);
-  const { nome, senha } = req.body;
-
-  db.get("SELECT * FROM usuarios WHERE nome = ?", [nome], (err, usuario) => {
-    if (err) {
-      console.error('❌ Erro no SELECT:', err);
-      return res.status(500).json({ message: 'Erro no servidor.' });
-    }
-
-    console.log('🗄️ Resultado do SELECT:', usuario);
-
-    if (!usuario) {
-      return res.status(401).json({ message: 'Usuário não encontrado.' });
-    }
-    if (usuario.senha !== senha) {
-      return res.status(401).json({ message: 'Senha incorreta.' });
-    }
-
-    return res.json({
-      
-      id_usuario: usuario.id_usuario,
-      nome: usuario.nome,
-      tipo_usuario: usuario.tipo_usuario,
-      contrato: usuario.contrato || null
-    });
-  });
-});
-
-app.get('/', (req, res) => {
-  res.send('Servidor funcionando!');
-});
-
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
 const nodemailer = require('nodemailer');
 
+// Rotas específicas
+const contratosRouter = require('./Rotas/Contratos');
+const seedRouter = require('./Rotas/Seed');
+
+const app = express();
+const PORT = process.env.PORT || 3001;
+
+// Configuração CORS para seu front-end
+app.use(cors({
+  origin: 'https://sistemav1.onrender.com',
+  credentials: true
+}));
+
+// Body parsing
+app.use(bodyParser.json());
+
+// --- Seed inicial de usuários (executa sempre, sem duplicar) ---
+(async () => {
+  const seeds = [
+    ['Renato Santos',      'renato@neoconstec.com', '123456', 'admin',       null],
+    ['Glauce Dantas',      'glaucea@simemp.com',    '123456', 'admin',       null],
+    ['Lucas Soares Lima',  'lucaslima@gmail.com',   '123456', 'coordenador', '411'],
+    ['Gerrard Suchmanouski','gerrardsuchmaouskisilva@gmail.com','123456','admin',null],
+    ['Andrey Debiasi de Souza','andrey@gmail.com',  '123456','coordenador','3122'],
+    ['Luiz Sócrates Veloso','luiz@gmail.com',       '123456','coordenador','3138'],
+    ['Marcio Herrera',     'marcio@gmail.com',      '123456','coordenador','415'],
+    ['Kleber Ubirajara',   'kleber@empresa.com',    '123456','financeiro', null]
+  ];
+
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS usuarios (
+        id_usuario   SERIAL PRIMARY KEY,
+        nome         TEXT UNIQUE NOT NULL,
+        email        TEXT,
+        senha        TEXT NOT NULL,
+        tipo_usuario TEXT,
+        contrato     TEXT
+      );
+    `);
+
+    for (const u of seeds) {
+      await db.query(
+        `INSERT INTO usuarios (nome, email, senha, tipo_usuario, contrato)
+         VALUES ($1,$2,$3,$4,$5)
+         ON CONFLICT (nome) DO NOTHING;`,
+        u
+      );
+    }
+    console.log('✅ Usuários seed executado com sucesso');
+  } catch (err) {
+    console.error('❌ Erro no seed de usuários:', err);
+  }
+})();
+
+// --- Rotas ---
+// Login
+app.post('/login', async (req, res) => {
+  console.log('🔍 Tentando login — corpo recebido:', req.body);
+  const { nome, senha } = req.body;
+  if (!nome || !senha) return res.status(400).json({ message: 'Nome e senha são obrigatórios.' });
+
+  try {
+    const { rows } = await db.query(
+      'SELECT id_usuario, nome, tipo_usuario, contrato, senha FROM usuarios WHERE nome = $1',
+      [nome]
+    );
+    const user = rows[0];
+    console.log('🗄️ Resultado do SELECT:', user);
+    if (!user) return res.status(401).json({ message: 'Usuário não encontrado.' });
+    if (user.senha !== senha) return res.status(401).json({ message: 'Senha incorreta.' });
+
+    delete user.senha;
+    res.json(user);
+  } catch (err) {
+    console.error('❌ Erro no login:', err);
+    res.status(500).json({ message: 'Erro no servidor.' });
+  }
+});
+
+// Esqueci senha
 app.post('/esqueci-senha', (req, res) => {
   const { email } = req.body;
-
   if (!email) return res.status(400).json({ message: 'Email é obrigatório.' });
 
-  // Aqui você poderia validar se o email existe no banco de dados
-
   const transporter = nodemailer.createTransport({
-    service: 'gmail', // ou outro provedor SMTP
+    service: 'gmail',
     auth: {
       user: 'seuemail@gmail.com',
-      pass: 'suasenhaouappkey' // use App Password se for Gmail
+      pass: 'suasenhaouappkey'
     }
   });
 
@@ -102,15 +106,31 @@ app.post('/esqueci-senha', (req, res) => {
       <h3>Redefinição de Senha</h3>
       <p>Recebemos uma solicitação para redefinir sua senha.</p>
       <p>Clique no link abaixo para continuar:</p>
-      <a href="http://localhost:3000/redefinir-senha?email=${encodeURIComponent(email)}">Redefinir Senha</a>
+      <a href="https://sistemav1.onrender.com/redefinir-senha?email=${encodeURIComponent(email)}">Redefinir Senha</a>
     `
   };
 
   transporter.sendMail(mailOptions, (erro, info) => {
     if (erro) {
-      console.log(erro);
+      console.error('❌ Erro ao enviar e-mail:', erro);
       return res.status(500).json({ message: 'Erro ao enviar o e-mail.' });
     }
     res.json({ message: 'E-mail enviado com sucesso!' });
   });
+});
+
+// Seed de contratos via rota
+app.use('/api', seedRouter);
+
+// Rotas de Contratos
+app.use('/api/contratos', contratosRouter);
+
+// Rota padrão
+app.get('/', (req, res) => {
+  res.send('Servidor rodando com Postgres!');
+});
+
+// Dispara servidor
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor rodando na porta ${PORT}`);
 });

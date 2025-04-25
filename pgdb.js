@@ -1,4 +1,4 @@
-// BackEnd/db.js
+// pgdb.js — conexão exclusiva com o Postgres
 require('dotenv').config();
 const { Pool } = require('pg');
 
