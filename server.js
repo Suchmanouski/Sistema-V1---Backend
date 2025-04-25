@@ -42,26 +42,26 @@ db.serialize(() => {
 });
 
 app.post('/login', (req, res) => {
+  console.log('🔍 Tentando login — corpo recebido:', req.body);
   const { nome, senha } = req.body;
-
-  if (!nome || !senha) {
-    return res.status(400).json({ message: 'Nome e senha são obrigatórios.' });
-  }
 
   db.get("SELECT * FROM usuarios WHERE nome = ?", [nome], (err, usuario) => {
     if (err) {
+      console.error('❌ Erro no SELECT:', err);
       return res.status(500).json({ message: 'Erro no servidor.' });
     }
+
+    console.log('🗄️ Resultado do SELECT:', usuario);
 
     if (!usuario) {
       return res.status(401).json({ message: 'Usuário não encontrado.' });
     }
-
     if (usuario.senha !== senha) {
       return res.status(401).json({ message: 'Senha incorreta.' });
     }
 
     return res.json({
+      
       id_usuario: usuario.id_usuario,
       nome: usuario.nome,
       tipo_usuario: usuario.tipo_usuario,
