@@ -9,6 +9,8 @@ const PORT = process.env.PORT || 3001;
 const usuariosRoutes = require('./routes/usuarios');
 const contratosRoutes = require('./routes/contratos');
 const despesasRoutes = require('./routes/despesas');
+const logsRoutes = require('./routes/logs');
+
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -17,6 +19,7 @@ app.use(bodyParser.json());
 app.use('/', usuariosRoutes);
 app.use('/', contratosRoutes);
 app.use('/', despesasRoutes);
+app.use('/', logsRoutes)
 
 app.listen(PORT, () => {
   console.log(`✅ Servidor rodando na porta ${PORT}`);

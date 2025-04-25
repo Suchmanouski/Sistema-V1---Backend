@@ -1,4 +1,4 @@
-const pool = require('./db');
+const pool = require('../db');
 
 async function criarTabelas() {
   try {
@@ -28,6 +28,15 @@ async function criarTabelas() {
         valor NUMERIC,
         data DATE,
         observacao TEXT
+      );
+
+      CREATE TABLE IF NOT EXISTS logs_atividade (
+        id SERIAL PRIMARY KEY,
+        usuario TEXT,
+        acao TEXT,
+        detalhes TEXT,
+        ip TEXT,
+        data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
 
