@@ -1,3 +1,5 @@
+// server.js
+
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -9,16 +11,18 @@ const PORT = process.env.PORT || 3001;
 const usuariosRoutes = require('./Rotas/Usuarios');
 const contratosRoutes = require('./Rotas/Contratos');
 const despesasRoutes = require('./Rotas/Despesas');
-const logsRoutes = require('./Rotas/Login');
+const loginRoutes = require('./Rotas/Login'); // Rota de login
 
 app.use(cors());
 app.use(bodyParser.json());
 
-// Rotas
+// Rota de login
+app.use('/login', loginRoutes);
+
+// Resto das rotas
 app.use('/usuarios', usuariosRoutes);
 app.use('/contratos', contratosRoutes);
 app.use('/despesas', despesasRoutes);
-app.use('/login', logsRoutes);
 
 app.listen(PORT, () => {
   console.log(`✅ Servidor rodando na porta ${PORT}`);
