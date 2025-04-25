@@ -1,3 +1,4 @@
+const { autenticarToken, verificarAdmin } = require('../middleware/autenticacao');
 const pool = require('../db');
 async function inserirUsuarios() {
   try {
