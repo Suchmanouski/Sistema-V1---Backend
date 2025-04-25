@@ -44,26 +44,27 @@ app.use(bodyParser.json());
     `);
 
     // Tabela contratos
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS contratos (
-        id             SERIAL PRIMARY KEY,
-        numero         TEXT NOT NULL,
-        contratante    TEXT NOT NULL,
-        estado         TEXT,
-        cidade         TEXT,
-        gerente        TEXT,
-        coordenador    TEXT,
-        valor_inicial  NUMERIC,
-        data_inicio    TIMESTAMP,
-        data_fim       TIMESTAMP,
-        status         TEXT,
-        tipo           TEXT,
-        criador        TEXT,
-        data_criacao   TIMESTAMP DEFAULT NOW()
-      );
-    `);
-
-    console.log('✅ Tabelas usuarios e contratos criadas/verificadas');
+    // Remove e recria a tabela contratos com todos os campos atualizados
+await db.query(`DROP TABLE IF EXISTS contratos;`);
+await db.query(`
+  CREATE TABLE contratos (
+    id             SERIAL PRIMARY KEY,
+    numero         TEXT NOT NULL,
+    contratante    TEXT NOT NULL,
+    estado         TEXT,
+    cidade         TEXT,
+    gerente        TEXT,
+    coordenador    TEXT,
+    valor_inicial  NUMERIC,
+    data_inicio    TIMESTAMP,
+    data_fim       TIMESTAMP,
+    status         TEXT,
+    tipo           TEXT,
+    criador        TEXT,
+    data_criacao   TIMESTAMP DEFAULT NOW()
+  );
+`);
+console.log('✅ Tabela contratos recriada com todos os campos.');
   } catch (err) {
     console.error('❌ Erro no seed inicial:', err);
   }
