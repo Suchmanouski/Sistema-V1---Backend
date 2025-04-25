@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3001;
 const usuariosRoutes = require('./Rotas/Usuarios');
 const contratosRoutes = require('./Rotas/Contratos');
 const despesasRoutes = require('./Rotas/Despesas');
-const logsRoutes = require('./Rotas/Logs');
+const logsRoutes = require('./Rotas/Login');
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 app.use('/usuarios', usuariosRoutes);
 app.use('/contratos', contratosRoutes);
 app.use('/despesas', despesasRoutes);
-app.use('/logs', logsRoutes);
+app.use('/login', logsRoutes);
 
 app.listen(PORT, () => {
   console.log(`✅ Servidor rodando na porta ${PORT}`);
