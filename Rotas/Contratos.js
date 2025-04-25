@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { cadastrarContrato } = require('../controllers/contratosController');
+const { cadastrarContrato } = require('../Controles/contratosC');
 const { autenticarToken, verificarAdmin } = require('../middleware/autenticacao');
 
 router.post('/contratos', autenticarToken, verificarAdmin, cadastrarContrato);
