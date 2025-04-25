@@ -1,11 +1,11 @@
 const pool = require('../db');
 
 async function autenticarUsuario(req, res) {
-  const { nome, senha } = req.body; // ← agora pega 'nome'
+  const { nome, senha } = req.body;
 
   try {
     const resultado = await pool.query(
-      'SELECT * FROM usuarios WHERE nome = $1 AND senha = $2', // ← busca por nome
+      'SELECT * FROM usuarios WHERE nome = $1 AND senha = $2',
       [nome, senha]
     );
 

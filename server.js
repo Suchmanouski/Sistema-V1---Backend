@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -11,12 +10,11 @@ const PORT = process.env.PORT || 3001;
 const usuariosRoutes = require('./Rotas/Usuarios');
 const contratosRoutes = require('./Rotas/Contratos');
 const despesasRoutes = require('./Rotas/Despesas');
-const loginRoutes = require('./Rotas/Login'); // Rota de login
+const loginRoutes = require('./Rotas/Login');
 
 app.use(cors());
 app.use(bodyParser.json());
 
-// Rotas
 app.use('/login', loginRoutes);
 app.use('/usuarios', usuariosRoutes);
 app.use('/contratos', contratosRoutes);
