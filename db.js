@@ -1,12 +1,13 @@
-const { Pool } = require('pg');
-require('dotenv').config();  // Carregar variáveis de ambiente do .env
+// db.js
+import pkg from 'pg'
+// já pegou o dotenv lá em server.js, então:
+const { Pool } = pkg
 
-// Configuração do pool de conexões com o banco de dados PostgreSQL
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,  // A URL do banco que você configurar no Render
-  ssl: {
-    rejectUnauthorized: false  // Para aceitar conexões seguras, se necessário
-  }
-});
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+})
 
-module.exports = pool;  // Exportando o pool para uso em outros arquivos
+export default {
+  query: (text, params) => pool.query(text, params)
+}

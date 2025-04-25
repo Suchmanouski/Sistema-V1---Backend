@@ -7,7 +7,8 @@ router.post('/', async (req, res) => {
 });
 
 router.get('/', async (req, res) => {
-  await listarContratos(req, res);
+  const contratos = await db.all('SELECT * FROM Contratos')
+  res.json(contratos)
 });
 
 module.exports = router;
