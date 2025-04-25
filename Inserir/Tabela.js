@@ -1,5 +1,3 @@
-const pool = require('../db');
-
 async function criarTabelas() {
   try {
     await pool.query(`
