@@ -1,100 +1,55 @@
-require('dotenv').config();
+// BackEnd/Rotas/Contratos.js
+
 const express = require('express');
-const cors = require('cors');
-const db = require('./db');         // conexão PostgreSQL via PG Pool
-const bodyParser = require('body-parser');
-const nodemailer = require('nodemailer');
+const db = require('../db');  // Postgres pool
+const router = express.Router();
 
-// Rotas específicas
-const contratosRouter = require('./Rotas/Contratos');
-
-const app = express();
-const PORT = process.env.PORT || 3001;
-
-// Configuração CORS para seu front-end
-app.use(cors({
-  origin: 'https://sistemav1.onrender.com',  // corrige domínio sem espaço
-  credentials: true
-}));
-
-// Body parsing
-app.use(bodyParser.json());
-
-// --- Seed inicial de usuários ---
-(async () => {
-  try {
-    await db.query('DROP TABLE IF EXISTS usuarios;');
-    await db.query(`
-      CREATE TABLE usuarios (
-        id_usuario   SERIAL PRIMARY KEY,
-        nome         TEXT UNIQUE NOT NULL,
-        email        TEXT,
-        senha        TEXT NOT NULL,
-        tipo_usuario TEXT,
-        contrato     TEXT
-      );
-    `);
-    const seeds = [
-      ['Renato Santos','renato@neoconstec.com','123456','admin',null],
-      ['Glauce Dantas','glaucea@simemp.com','123456','admin',null],
-      ['Lucas Soares Lima','lucaslima@gmail.com','123456','coordenador','411'],
-      ['Gerrard Suchmanouski','gerrardsuchmaouskisilva@gmail.com','123456','admin',null],
-      ['Andrey Debiasi de Souza','andrey@gmail.com','123456','coordenador','3122'],
-      ['Luiz Sócrates Veloso','luiz@gmail.com','123456','coordenador','3138'],
-      ['Marcio Herrera','marcio@gmail.com','123456','coordenador','415'],
-      ['Kleber Ubirajara','kleber@empresa.com','123456','financeiro',null]
-    ];
-    for (const u of seeds) {
-      await db.query(
-        `INSERT INTO usuarios (nome,email,senha,tipo_usuario,contrato) VALUES ($1,$2,$3,$4,$5);`,
-        u
-      );
-    }
-    console.log('✅ Usuarios seed OK');
-  } catch (err) {
-    console.error('Erro seed usuarios:', err);
-  }
-})();
-
-// Rotas de login
-app.post('/login', async (req, res) => {
-  const { nome, senha } = req.body;
-  if (!nome || !senha) return res.status(400).json({ message: 'Nome e senha são obrigatórios.' });
+// GET /api/contratos - lista todos os contratos
+router.get('/', async (req, res) => {
   try {
     const { rows } = await db.query(
-      'SELECT id_usuario,nome,tipo_usuario,contrato,senha FROM usuarios WHERE nome=$1',[nome]
-    );
-    const user = rows[0];
-    if (!user) return res.status(401).json({ message: 'Usuário não encontrado.' });
-    if (user.senha !== senha) return res.status(401).json({ message: 'Senha incorreta.' });
-    delete user.senha;
-    res.json(user);
+      `SELECT id, numero, contratante, estado, cidade, gerente, coordenador,
+              valor_inicial AS "valorInicial", data_inicio AS "dataInicio",
+              data_fim AS "dataFim", status, tipo, criador, data_criacao AS "dataCriacao"
+       FROM contratos
+       ORDER BY id DESC`);
+    res.json(rows);
   } catch (err) {
-    console.error('Erro no login:', err);
-    res.status(500).json({ message: 'Erro no servidor.' });
+    console.error('Erro ao listar contratos:', err);
+    res.status(500).json({ error: 'Erro ao listar contratos.' });
   }
 });
 
-// Esqueci senha
-app.post('/esqueci-senha', (req, res) => {
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ message: 'Email é obrigatório.' });
-  const transporter = nodemailer.createTransport({/*...*/});
-  const mailOptions = {/*...*/};
-  transporter.sendMail(mailOptions, (erro) => {
-    if (erro) {
-      console.error('Erro envio email:', erro);
-      return res.status(500).json({ message: 'Erro ao enviar e-mail.' });
-    }
-    res.json({ message: 'E-mail enviado com sucesso!' });
-  });
+// POST /api/contratos - cria novo contrato
+router.post('/', async (req, res) => {
+  const {
+    numero, contratante, estado, cidade,
+    gerente, coordenador, valorInicial,
+    dataInicio, dataFim, status, tipo, criador
+  } = req.body;
+
+  if (!numero || !contratante) {
+    return res.status(400).json({ error: 'Campos numero e contratante são obrigatórios.' });
+  }
+
+  try {
+    const result = await db.query(
+      `INSERT INTO contratos
+         (numero, contratante, estado, cidade, gerente, coordenador,
+          valor_inicial, data_inicio, data_fim, status, tipo, criador)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+       RETURNING id, numero, contratante, estado, cidade, gerente, coordenador,
+                 valor_inicial AS "valorInicial", data_inicio AS "dataInicio",
+                 data_fim AS "dataFim", status, tipo, criador, data_criacao AS "dataCriacao"`,
+      [numero, contratante, estado, cidade, gerente, coordenador,
+       valorInicial, dataInicio, dataFim, status, tipo, criador]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error('Erro ao criar contrato:', err);
+    res.status(500).json({ error: 'Erro ao criar contrato.' });
+  }
 });
 
-// Rotas de contratos
-app.use('/api/contratos', contratosRouter);
-
-// Rota raiz
-app.get('/', (req, res) => res.send('Servidor rodando com Postgres!'));
-
-// Inicia servidor
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+module.exports = router;
