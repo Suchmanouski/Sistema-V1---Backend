@@ -43,28 +43,39 @@ app.use(bodyParser.json());
       );
     `);
 
-    // Tabela contratos
-    // Remove e recria a tabela contratos com todos os campos atualizados
-await db.query(`DROP TABLE IF EXISTS contratos;`);
-await db.query(`
-  CREATE TABLE contratos (
-    id             SERIAL PRIMARY KEY,
-    numero         TEXT NOT NULL,
-    contratante    TEXT NOT NULL,
-    estado         TEXT,
-    cidade         TEXT,
-    gerente        TEXT,
-    coordenador    TEXT,
-    valor_inicial  NUMERIC,
-    data_inicio    TIMESTAMP,
-    data_fim       TIMESTAMP,
-    status         TEXT,
-    tipo           TEXT,
-    criador        TEXT,
-    data_criacao   TIMESTAMP DEFAULT NOW()
-  );
-`);
-console.log('✅ Tabela contratos recriada com todos os campos.');
+    // Tabela contratos: drop e recria
+    await db.query(`DROP TABLE IF EXISTS contratos;`);
+    await db.query(`
+      CREATE TABLE contratos (
+        id             SERIAL PRIMARY KEY,
+        numero         TEXT NOT NULL,
+        contratante    TEXT NOT NULL,
+        estado         TEXT,
+        cidade         TEXT,
+        gerente        TEXT,
+        coordenador    TEXT,
+        valor_inicial  NUMERIC,
+        data_inicio    TIMESTAMP,
+        data_fim       TIMESTAMP,
+        status         TEXT,
+        tipo           TEXT,
+        criador        TEXT,
+        data_criacao   TIMESTAMP DEFAULT NOW()
+      );
+    `);
+    console.log('✅ Tabela contratos recriada com todos os campos.');
+
+    // Seed de contratos de exemplo
+    await db.query(`
+      INSERT INTO contratos
+        (numero, contratante, estado, cidade, gerente, coordenador,
+         valor_inicial, data_inicio, data_fim, status, tipo, criador)
+      VALUES
+        ('411',  'Empresa Exemplo A', 'SP', 'São Paulo',       'João Silva', 'Lucas Soares Lima',      10000.00, '2024-01-01', '2024-12-31', 'ativo', 'padrão', 'sistema'),
+        ('3122', 'Empresa Exemplo B', 'RJ', 'Rio de Janeiro',  'Maria Souza','Andrey Debiasi de Souza', 5000.50,  '2024-02-01', '2024-11-30', 'ativo', 'padrão', 'sistema')
+      ON CONFLICT (numero) DO NOTHING;
+    `);
+    console.log('✅ Seed de contratos inserido.');
   } catch (err) {
     console.error('❌ Erro no seed inicial:', err);
   }
@@ -106,7 +117,7 @@ app.post('/esqueci-senha', (req, res) => {
     from: 'seuemail@gmail.com',
     to: email,
     subject: 'Redefinição de Senha',
-    html: `<p>Redefina em: <a href=\"https://sistemav1.onrender.com/redefinir-senha?email=${encodeURIComponent(email)}\">Clique aqui</a></p>`
+    html: `<p>Redefina em: <a href="https://sistemav1.onrender.com/redefinir-senha?email=${encodeURIComponent(email)}">Clique aqui</a></p>`
   };
   transporter.sendMail(mailOptions, (erro) => {
     if (erro) {
